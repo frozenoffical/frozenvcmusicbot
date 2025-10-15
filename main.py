@@ -1457,27 +1457,36 @@ RESTART_CHANNEL_ID = -1001849376366  # Your channel/chat ID
 
 async def heartbeat():
     while True:
-        await asyncio.sleep(3 * 3600)  # every 10 hours
+        await asyncio.sleep(3 * 3600)  # every 3 hours
         try:
-            logger.info("💤 Heartbeat: performing full restart to prevent MTProto freeze...")
+            logger.info("💤 Heartbeat: triggering full Heroku dyno restart...")
 
-            # Notify channel before restart
-            pre_msg = None
+            # Notify admin channel
             try:
-                pre_msg = await bot.send_message(RESTART_CHANNEL_ID, "⚡ Bot is restarting (scheduled heartbeat)")
+                await bot.send_message(RESTART_CHANNEL_ID, "⚡ Bot restarting. Queues will not be lost.")
             except Exception as e:
-                logger.warning(f"Failed to notify channel about restart: {e}")
+                logger.warning(f"Failed to notify admin channel: {e}")
+
+            # Notify all active chats
+            active_chats = list(chat_containers.keys())  # chats with queues
+            for chat_id in active_chats:
+                try:
+                    await bot.send_message(chat_id, "⚡ Bot is restarting. Your queue will be preserved.")
+                except Exception as e:
+                    logger.warning(f"Failed to notify chat {chat_id}: {e}")
 
             # Save state to DB
-            save_state_to_db()
-            logger.info("✅ Bot state saved to DB")
+            try:
+                save_state_to_db()
+            except Exception as e:
+                logger.warning(f"Failed to save state: {e}")
 
-            # Fully restart the process (like /restart endpoint)
-            os.execl(sys.executable, sys.executable, *sys.argv)
+            # Exit process cleanly → Heroku restarts automatically
+            logger.info("🌀 Exiting process — Heroku will restart this dyno automatically.")
+            os._exit(0)
 
         except Exception as e:
             logger.error(f"❌ Heartbeat restart failed: {e}")
-
 # ─── Main Entry ───────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     logger.info("Loading persisted state from MongoDB...")
