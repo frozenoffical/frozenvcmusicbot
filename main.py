@@ -378,7 +378,7 @@ async def start_handler(_, message):
     support_group = os.getenv("SUPPORT_GROUP", "https://t.me/Frozensupport1")
     start_animation = os.getenv(
         "START_ANIMATION",
-        "https://files.catbox.moe/oniqze.mp4"
+        "https://image-backend-kust-065b67abd005.herokuapp.com/f/c7529ec72e134b8fb0b12f65eb823e83"
     )
 
     caption = (
