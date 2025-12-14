@@ -921,7 +921,7 @@ async def fallback_local_playback(chat_id: int, message: Message, song_info: dic
         media_path = await vector_transport_resolver(video_url)
         await call_py.play(
             chat_id,
-            MediaStream(media_path, video_flags=MediaStream.Flags.IGNORE)
+            MediaStream(media_path)
         )
         playback_tasks[chat_id] = asyncio.current_task()
 
@@ -990,6 +990,7 @@ async def fallback_local_playback(chat_id: int, message: Message, song_info: dic
 
         if chat_id in chat_containers and chat_containers[chat_id]:
             chat_containers[chat_id].pop(0)
+
 
 
 
